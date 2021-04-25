@@ -10,21 +10,43 @@ import numpy as np
 #          [0, 0, 0, 4, 1, 9, 0, 0, 5],
 #          [0, 0, 0, 0, 8, 0, 0, 7, 9]]
 
-board = [[0, 0, 0, 0, 1, 0, 0, 0, 0],
-         [0, 0, 0, 3, 0, 2, 0, 0, 0],
-         [0, 0, 9, 0, 0, 0, 3, 0, 0],
-         [0, 2, 0, 0, 0, 0, 0, 4, 0],
-         [3, 0, 0, 0, 0, 0, 0, 0, 5],
-         [0, 4, 0, 0, 0, 0, 0, 6, 0],
-         [0, 0, 4, 0, 0, 0, 7, 0, 0],
-         [0, 0, 0, 1, 0, 8, 0, 0, 0],
-         [0, 0, 0, 0, 9, 0, 0, 0, 0]]
+game = {
+    # the board is represented as a list of lists containing the number at that location in the grid
+    # 0 means the location is not filled
+    "board": [[0, 0, 0, 0, 0, 0, 9, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 6, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 4, 0, 0, 0, 6, 0, 0, 0],
+              [0, 0, 5, 0, 0, 0, 0, 0, 0]],
+
+    # each thermometer is represented as a list of tuples where the first tuple is the bulb
+    # this is a list of thermometers
+    "thermometers": [[(2, 0), (1, 0), (0, 0), (0, 1), (0, 2), (0, 3), (1, 3), (2, 3)],
+                     [(4, 2), (3, 2)],
+                     [(4, 2), (5, 2)],
+                     [(4, 2), (4, 3), (4, 4), (4, 5)],
+                     [(7, 5), (6, 5), (6, 6), (6, 7), (6, 8), (7, 8), (8, 8)],
+                     [(7, 5), (8, 5)]],
+
+    # sum_areas is a list of distionanies
+    "sum_areas": [{
+        "sum": 10,
+        "locations": [(0, 0), (0, 1)],
+    },
+    {
+        "sum": 27,
+        "locations": [(1, 2), (2, 2), (2, 3)]
+    }]
+}
 
 
 # returns true if n can be placed in row r
 # false if n is already in row r
-def constraint_row(r, n):
-    global board
+def constraint_row(board, r, n):
     for c in range(9):
         if board[r][c] == n:
             return False
@@ -32,8 +54,7 @@ def constraint_row(r, n):
 
 # returns true if n can be placed in column c
 # false if n is already in column c
-def constraint_column(c, n):
-    global board
+def constraint_column(board, c, n):
     for r in range(9):
         if board[r][c] == n:
             return False
@@ -42,8 +63,7 @@ def constraint_column(c, n):
 
 # returns true if n can be placed in box b
 # false if n is already in box b
-def constraint_box(x, y, n):
-    global board
+def constraint_box(board, x, y, n):
     bx = (x // 3) * 3
     by = (y // 3) * 3
     for r in range(3):
@@ -52,8 +72,10 @@ def constraint_box(x, y, n):
                 return False
     return True
 
-def constraint_chess_knight(x, y, n):
-    global board
+
+# returns true if n can be placed at x,y in the board breaking the chess knights rule
+# false if n is a knights move away
+def constraint_chess_knight(board, x, y, n):
     for r in range(9):
         for c in range(9):
             distance = abs(r - y) + abs(c - x)
@@ -67,31 +89,106 @@ def constraint_chess_knight(x, y, n):
                 return False
     return True
 
-def possible(x, y, n):
-    if not constraint_row(y, n):
+
+# returns true if n can be placed at x,y in teh board without breaking the chess king rule
+# false if n is a kings move away
+def constraint_chess_king(board, x, y, n):
+    for r in range(3):
+        for c in range(3):
+
+            #   x x x
+            #   x K x   we can skip 1, 1 because this represents the current
+            #   x x x   location as illustrated here
+            if r == 1 and c == 1:
+                continue
+
+            lx = x+c-1 # location x and y are the current location we are evaluating in the board
+            ly = y+r-1
+            if lx < 0 or lx > 8 or ly < 0 or ly > 8:
+                continue
+
+            # check surrounding square
+            if board[ly][lx] == n:
+                return False
+
+    # if we didnt find a reason to fail, it succeeds
+    return True
+
+def constraint_thermometer(game, x, y, n):
+    board = game.get('board')
+    thermometers = game.get('thermometers')
+
+    if not isinstance(thermometers, list):
+        return True
+
+    # search over all the thermometers
+    for t in thermometers:
+
+        # check if x, y exists on this thermometer
+        found = False
+        for pos in t:
+            if pos[0] == x and pos[1] == y:
+                found = True
+                break
+
+        # this x,y was not found on this thermometer,
+        # so check the next thermomemter
+        if not found:
+            continue
+
+        before = True # this keeps track if out current pos is before the given x,y along the thermometer
+        for pos in t:
+            if pos[0] == x and pos[1] == y:
+                before = False
+                continue
+
+            # if this position on the board is empty, skip this one
+            if board[pos[1]][pos[0]] == 0:
+                continue
+
+            if before:
+                if n <= board[pos[1]][pos[0]]:
+                    return False
+            else:
+                if n >= board[pos[1]][pos[0]]:
+                    return False
+
+    # we havent failed, so we good?
+    return True
+
+def possible(game, x, y, n):
+    board = game.get('board')
+
+    if not constraint_row(board, y, n):
         return False
 
-    if not constraint_column(x, n):
+    if not constraint_column(board, x, n):
         return False
 
-    if not constraint_box(x, y, n):
+    if not constraint_box(board, x, y, n):
         return False
 
-    if not constraint_chess_knight(x, y, n):
+    if not constraint_chess_knight(board, x, y, n):
+        return False
+
+    if not constraint_thermometer(game, x, y, n):
         return False
 
     return True
 
 
-def solve():
-    global board
+def solve(game):
+    board = game.get('board')
+    #print(np.matrix(board))
+    #input('Step?')
+
     for y in range(9):
         for x in range(9):
             if board[y][x] == 0:
                 for n in range(1, 10):
-                    if possible(x, y, n):
+                    if possible(game, x, y, n):
                         board[y][x] = n
-                        solve()
+                        solve(game)
                         board[y][x] = 0
                 return
     print(np.matrix(board))
@@ -99,4 +196,4 @@ def solve():
 
 
 if __name__ == "__main__":
-    solve()
+    solve(game)
