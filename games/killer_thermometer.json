@@ -1,0 +1,39 @@
+{
+    "reference": "https://www.youtube.com/watch?v=d2GE4rEe7uE",
+    "board": [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0]],
+
+    "thermometers": [[[0, 0], [0, 1]],
+                     [[1, 0], [1, 1]],
+                     [[4, 1], [5, 0], [6, 1], [7, 1]],
+                     [[0, 3], [1, 3]],
+                     [[0, 4], [1, 4]]],
+
+    "sum_areas": [{"sum": 10, "locations": [[0, 0], [0, 1]]},
+                  {"sum": 10, "locations": [[1, 0], [1, 1]]},
+                  {"sum": 10, "locations": [[0, 3], [1, 3]]},
+                  {"sum": 10, "locations": [[5, 3], [5, 4]]},
+                  {"sum": 10, "locations": [[7, 3], [7, 4]]},
+                  {"sum": 10, "locations": [[8, 3], [8, 4]]},
+                  {"sum": 10, "locations": [[0, 4], [1, 4]]},
+                  {"sum": 10, "locations": [[4, 5], [5, 5]]},
+                  {"sum": 10, "locations": [[8, 6], [8, 7]]},
+                  {"sum": 10, "locations": [[2, 7], [2, 8]]},
+                  {"sum": 10, "locations": [[3, 7], [4, 7]]}],
+
+    "constraints": {
+        "sudoku_row": true,
+        "sudoku_column": true,
+        "sudoku_box": true,
+        "chess_knight": true,
+        "thermometers": true,
+        "sum_areas": true
+    }
+}
