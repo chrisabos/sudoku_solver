@@ -93,24 +93,30 @@ i = 0
 
 # returns true if n can be placed in row r
 # false if n is already in row r
-def constraint_row(board, r, n):
+def constraint_row(game, x, y, n):
+    board = game.get('board')
+
     for c in range(9):
-        if board[r][c] == n:
+        if board[y][c] == n:
             return False
     return True
 
 # returns true if n can be placed in column c
 # false if n is already in column c
-def constraint_column(board, c, n):
+def constraint_column(game, x, y, n):
+    board = game.get('board')
+
     for r in range(9):
-        if board[r][c] == n:
+        if board[r][x] == n:
             return False
     return True
 
 
 # returns true if n can be placed in box b
 # false if n is already in box b
-def constraint_box(board, x, y, n):
+def constraint_box(game, x, y, n):
+    board = game.get('board')
+
     bx = (x // 3) * 3
     by = (y // 3) * 3
     for r in range(3):
@@ -122,7 +128,9 @@ def constraint_box(board, x, y, n):
 
 # returns true if n can be placed at x,y in the board breaking the chess knights rule
 # false if n is a knights move away
-def constraint_chess_knight(board, x, y, n):
+def constraint_chess_knight(game, x, y, n):
+    board = game.get('board')
+
     for r in range(9):
         for c in range(9):
             distance = abs(r - y) + abs(c - x)
@@ -139,7 +147,9 @@ def constraint_chess_knight(board, x, y, n):
 
 # returns true if n can be placed at x,y in the board without breaking the chess king rule
 # false if n is a kings move away
-def constraint_chess_king(board, x, y, n):
+def constraint_chess_king(game, x, y, n):
+    board = game.get('board')
+
     for r in range(3):
         for c in range(3):
 
@@ -286,23 +296,23 @@ def possible(game, x, y, n):
     constraints = game.get('constraints', {'sudoku_row': True, 'sudoku_column': True, 'sudoku_box': True})
 
     if True == constraints.get('sudoku_row', False):
-        if not constraint_row(board, y, n):
+        if not constraint_row(game, x, y, n):
             return False
 
     if True == constraints.get('sudoku_column', False):
-        if not constraint_column(board, x, n):
+        if not constraint_column(game, x, y, n):
             return False
 
     if True == constraints.get('sudoku_box', False):
-        if not constraint_box(board, x, y, n):
+        if not constraint_box(game, x, y, n):
             return False
 
     if True == constraints.get('chess_knight', False):
-        if not constraint_chess_knight(board, x, y, n):
+        if not constraint_chess_knight(game, x, y, n):
             return False
 
     if True == constraints.get('chess_king', False):
-        if not constraint_chess_king(board, x, y, n):
+        if not constraint_chess_king(game, x, y, n):
             return False
 
     if True == constraints.get('thermometers', False):
